@@ -4,6 +4,7 @@ import UserList from "./components/UserList";
 import Footer from "./components/Footer";
 import AppInfo from "./components/AppInfo";
 import PostList from "./components/PostList";
+import SimpleUserPosts from "./components/SimpleUserPosts";
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -32,7 +33,7 @@ function App() {
   }, [users, loading]);
 
   // Step 5.1c og 5.1d: handleSubmit-funktion
-  function handleSubmit(e) {
+  /* function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
     const newUser = {
@@ -45,10 +46,83 @@ function App() {
     setUsers([...users, newUser]);
     form.reset();
   }
+  */
+
+  // Step 9.2: Log API responses
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+
+    const newUser = {
+      name: form.name.value,
+      mail: form.mail.value,
+      title: form.title.value,
+      image: form.image.value,
+    };
+
+    console.log("Sender til server:", newUser);
+
+    try {
+      // Simuler POST til server
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newUser),
+        }
+      );
+
+      console.log("Response status:", response.status);
+
+      const serverResponse = await response.json();
+      console.log("Server svarede:", serverResponse);
+
+      // Tilføj til lokal liste (med vores eget ID)
+      const userWithId = {
+        ...newUser,
+        id: crypto.randomUUID(),
+      };
+
+      setUsers([...users, userWithId]);
+      form.reset();
+
+      alert("✅ Bruger tilføjet!");
+    } catch (error) {
+      console.error("❌ Fejl:", error);
+      alert("Kunne ikke tilføje bruger: " + error.message);
+    }
+  }
 
   // Step 5.3: Slet bruger funktion
-  function handleDeleteUser(id) {
+  /*  function handleDeleteUser(id) {
     setUsers(users.filter((user) => user.id !== id));
+  }
+  */
+
+  async function handleDeleteUser(id) {
+    console.log("Sletter bruger med ID:", id);
+
+    try {
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/users/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      console.log("Delete response status:", response.status);
+
+      // Fjern fra lokal liste
+      setUsers(users.filter((user) => user.id !== id));
+      console.log("✅ Bruger slettet lokalt");
+    } catch (error) {
+      console.error("❌ Fejl ved sletning:", error);
+      alert("Kunne ikke slette bruger: " + error.message);
+    }
   }
 
   // Step 3.3: Vis loader mens data hentes
@@ -64,7 +138,6 @@ function App() {
     <div className="page">
       <Header />
       <AppInfo userCount={users.length} />
-
       {/* Step 5.1b og 5.1d: Formular til at tilføje brugere */}
       <form onSubmit={handleSubmit}>
         <label htmlFor="name">Navn</label>
@@ -79,8 +152,8 @@ function App() {
           <button type="submit">Tilføj bruger</button>
         </div>
       </form>
-
       <UserList users={users} onDelete={handleDeleteUser} />
+      <SimpleUserPosts />;
       <Footer />
     </div>
   );
